@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kostnader - Långkatekesens Samfällighet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            height: 70vh;
+            width: 100%;
+        }
+        .summary-container {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid #4285F4;
+        }
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .summary-item {
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .vatten { background-color: #4285F4; }
+        .varme { background-color: #EA4335; }
+        .el1 { background-color: #FBBC05; }
+        .el2 { background-color: #34A853; }
+        .renhallning { background-color: #FF6D01; }
+        .total { background-color: #6B5B95; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kostnader - Långkatekesens Samfällighet i Lund</h1>
+        <div class="chart-container">
+            <canvas id="kostnadsDiagram"></canvas>
+        </div>
+        
+        <div class="summary-container">
+            <div class="summary-title">Årssummor</div>
+            <div id="summaryData" class="summary-grid">
+                <!-- Årssummor kommer att läggas till här med JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data för diagrammet baserat på bilden
+        // Notera att data är ungefärliga värden baserat på bilden
+        const labels = [
+            // 2022
+            'Jan 2022', 'Feb 2022', 'Mar 2022', 'Apr 2022', 'Maj 2022', 'Jun 2022', 
+            'Jul 2022', 'Aug 2022', 'Sep 2022', 'Okt 2022', 'Nov 2022', 'Dec 2022',
+            // 2023
+            'Jan 2023', 'Feb 2023', 'Mar 2023', 'Apr 2023', 'Maj 2023', 'Jun 2023',
+            'Jul 2023', 'Aug 2023', 'Sep 2023', 'Okt 2023', 'Nov 2023', 'Dec 2023',
+            // 2024
+            'Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'Maj 2024', 'Jun 2024',
+            'Jul 2024', 'Aug 2024', 'Sep 2024', 'Okt 2024', 'Nov 2024', 'Dec 2024',
+            // 2025
+            'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025'
+        ];
+
+        // Värden för varje kategori
+        const vattenData = [
+            // 2022
+            7200, 6000, 7200, 7200, 7100, 7200, 6800, 3000, 6900, 6700, 6700, 6700,
+            // 2023
+            7800, 7200, 7800, 8900, 7800, 7800, 7800, 7700, 7700, 7700, 7700, 7700,
+            // 2024
+            7800, 9200, 8800, 9200, 9200, 9200, 9200, 9200, 9200, 9200, 9000, 5000,
+            // 2025
+            9200, 9000, 13000, 12000
+        ];
+
+        const varmeData = [
+            // 2022
+            27500, 43800, 39800, 35500, 36300, 24500, 18600, 13000, 12200, 11800, 16800, 19800,
+            // 2023
+            29800, 41200, 39200, 37000, 37500, 24200, 18600, 11500, 11000, 11500, 13600, 18400,
+            // 2024
+            22200, 35800, 40000, 38800, 38200, 24800, 17000, 12500, 12000, 12200, 13000, 16000,
+            // 2025
+            22800, 34600, 39800, 42500
+        ];
+
+        const el1Data = [
+            // 2022
+            1300, 1300, 1200, 1000, 800, 800, 700, 700, 700, 800, 900, 1000,
+            // 2023
+            1000, 1000, 1200, 1100, 900, 800, 800, 800, 700, 800, 900, 900,
+            // 2024
+            900, 900, 800, 800, 700, 700, 700, 700, 800, 800, 900, 900,
+            // 2025
+            900, 800, 800, 700
+        ];
+
+        const el2Data = [
+            // 2022
+            1500, 1600, 1000, 800, 1200, 1300, 1200, 1000, 1200, 2800, 1600, 1800,
+            // 2023
+            1400, 1200, 1200, 1100, 1100, 1000, 1000, 900, 900, 1000, 1000, 1100,
+            // 2024
+            1100, 1000, 900, 900, 900, 1000, 1000, 900, 900, 1000, 1000, 1100,
+            // 2025
+            1200, 1100, 1000, 1300
+        ];
+
+        const renhallningData = [
+            // 2022
+            4000, 2800, 3000, 2800, 3000, 2800, 3000, 3000, 2800, 3000, 4400, 2800,
+            // 2023
+            4000, 3600, 4000, 5300, 4000, 4000, 3800, 3800, 3800, 5300, 3800, 3800,
+            // 2024
+            3800, 3800, 3600, 3000, 3000, 2800, 3000, 4800, 3000, 3200, 4800, 3000,
+            // 2025
+            3000, 4800, 3000, 2800
+        ];
+
+        // Funktion för att beräkna årssummor
+        function calculateYearlySums() {
+            // Definiera åren och antalet månader per år
+            const years = [2022, 2023, 2024, 2025];
+            const monthsPerYear = [12, 12, 12, 4]; // 2025 har bara 4 månader i data
+            
+            const yearlySums = {};
+            
+            years.forEach((year, yearIndex) => {
+                let startIdx = 0;
+                // Beräkna startindex för aktuellt år
+                for(let i = 0; i < yearIndex; i++) {
+                    startIdx += monthsPerYear[i];
+                }
+                
+                // Beräkna summor för varje kategori
+                const vattenSum = vattenData.slice(startIdx, startIdx + monthsPerYear[yearIndex])
+                    .reduce((acc, val) => acc + val, 0);
+                const varmeSum = varmeData.slice(startIdx, startIdx + monthsPerYear[yearIndex])
+                    .reduce((acc, val) => acc + val, 0);
+                const el1Sum = el1Data.slice(startIdx, startIdx + monthsPerYear[yearIndex])
+                    .reduce((acc, val) => acc + val, 0);
+                const el2Sum = el2Data.slice(startIdx, startIdx + monthsPerYear[yearIndex])
+                    .reduce((acc, val) => acc + val, 0);
+                const renhallningSum = renhallningData.slice(startIdx, startIdx + monthsPerYear[yearIndex])
+                    .reduce((acc, val) => acc + val, 0);
+                
+                yearlySums[year] = {
+                    vatten: vattenSum,
+                    varme: varmeSum,
+                    el1: el1Sum,
+                    el2: el2Sum,
+                    renhallning: renhallningSum,
+                    total: vattenSum + varmeSum + el1Sum + el2Sum + renhallningSum
+                };
+            });
+            
+            return yearlySums;
+        }
+
+        // Funktion för att visa årssummor i HTML
+        function displayYearlySums(yearlySums) {
+            const summaryContainer = document.getElementById('summaryData');
+            summaryContainer.innerHTML = ''; // Rensa tidigare innehåll
+            
+            // Skapa element för varje år
+            for (const [year, data] of Object.entries(yearlySums)) {
+                // Skapa en wrapper för varje år
+                const yearWrapper = document.createElement('div');
+                yearWrapper.style.marginBottom = '15px';
+                yearWrapper.innerHTML = `<h3>${year}${year == 2025 ? ' (jan-apr)' : ''}</h3>`;
+                summaryContainer.appendChild(yearWrapper);
+                
+                // Skapa element för varje kostnadskategori
+                Object.entries(data).forEach(([category, sum]) => {
+                    const item = document.createElement('div');
+                    item.className = `summary-item ${category}`;
+                    
+                    // Formatera kategorinamnet för visning
+                    let categoryName;
+                    switch(category) {
+                        case 'vatten': categoryName = 'Vatten'; break;
+                        case 'varme': categoryName = 'Värme'; break;
+                        case 'el1': categoryName = 'El 1'; break;
+                        case 'el2': categoryName = 'El 2'; break;
+                        case 'renhallning': categoryName = 'Renhållning'; break;
+                        case 'total': categoryName = 'Totalt'; break;
+                        default: categoryName = category;
+                    }
+                    
+                    // Formatera summan med tusental-separatorer
+                    const formattedSum = sum.toLocaleString('sv-SE') + ' kr';
+                    
+                    item.innerHTML = `<strong>${categoryName}:</strong> ${formattedSum}`;
+                    yearWrapper.appendChild(item);
+                });
+            }
+        }
+
+        // Skapa och rendera diagrammet
+        window.onload = function() {
+            const ctx = document.getElementById('kostnadsDiagram').getContext('2d');
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Vatten',
+                            data: vattenData,
+                            backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                            borderColor: '#4285F4',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Värme',
+                            data: varmeData,
+                            backgroundColor: 'rgba(234, 67, 53, 0.2)',
+                            borderColor: '#EA4335',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'El 1',
+                            data: el1Data,
+                            backgroundColor: 'rgba(251, 188, 5, 0.2)',
+                            borderColor: '#FBBC05',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'El 2',
+                            data: el2Data,
+                            backgroundColor: 'rgba(52, 168, 83, 0.2)',
+                            borderColor: '#34A853',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Renhållning',
+                            data: renhallningData,
+                            backgroundColor: 'rgba(255, 109, 1, 0.2)',
+                            borderColor: '#FF6D01',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                usePointStyle: true,
+                                padding: 20,
+                                // För att göra legenden klickbar (visa/dölja)
+                                generateLabels: function(chart) {
+                                    const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                    labels.forEach(label => {
+                                        label.fillStyle = chart.data.datasets[label.datasetIndex].borderColor;
+                                    });
+                                    return labels;
+                                }
+                            },
+                            onClick: function(e, legendItem, legend) {
+                                const index = legendItem.datasetIndex;
+                                const ci = legend.chart;
+                                const meta = ci.getDatasetMeta(index);
+                                
+                                // Växla mellan att visa och dölja dataset
+                                meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                                
+                                // Uppdatera diagrammet
+                                ci.update();
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 16
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('sv-SE').format(context.parsed.y) + ' kr';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45,
+                                callback: function(value, index, values) {
+                                    // Visa bara januari och juli för varje år för att minska trängseln
+                                    const month = index % 12;
+                                    const label = this.getLabelForValue(value);
+                                    
+                                    if (month === 0 || month === 6) {
+                                        return label;
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                // Formatera y-axelvärden med valutaformat
+                                callback: function(value) {
+                                    return value.toLocaleString('sv-SE') + ' kr';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Beräkna och visa årssummor
+            const yearlySums = calculateYearlySums();
+            displayYearlySums(yearlySums);
+        };
+    </script>
+</body>
+</html>
